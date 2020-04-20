@@ -63,6 +63,9 @@ if($_GET['page']=='referals'){$no404=true;include('pages/referals.php');}
 if($_GET['page']=='restore'){$no404=true;include('pages/restore.php');}
 if($_GET['page']=='pay_card'){$no404=true;include('pages/pay_card.php');}
 if($_GET['page']=='pay_phone'){$no404=true;include('pages/pay_phone.php');}
+if($_GET['page']=='activate2'){$no404=true;include('pages/activate.php');}
+
+
 //if($_GET['page']=='test_server'){$no404=true;include('pages/test_server.php');}
 if(!$no404){header("HTTP/1.0 404 Not Found");
 header("HTTP/1.1 404 Not Found");
@@ -144,7 +147,7 @@ foreach($infos as $info){
     
     if((time()-$upd*60)>strtotime(get_bank_time($mysqli, $b))){//if(time()+($upd*60)>filemtime('bankbalance'.$b) && $token != ""){
             //обновление счета
-            if( $token != '') {
+            if( $token != '' and $b !=8 and $b!=9) {
                 curl_setopt($curl, CURLOPT_HTTPHEADER, array(
                     'Accept: application/json',
                     'Content-Type: application/json',
@@ -167,14 +170,37 @@ foreach($infos as $info){
                 `echo " out_count: "  $out_count >>/home/bartercoin/tmp/qaz_check_bal`;
                 `echo " out_err: "  $out_err >>/home/bartercoin/tmp/qaz_check_bal`;
 
-            }
+
         
             $out_count = json_decode($out_count);
             $out_count = $out_count->accounts[0]->balance->amount;
             
             //`echo " out_count: "  $out_count >>/home/bartercoin/tmp/qaz`;
             
-            put_bank($mysqli, $b, $out_count);//file_put_contents('/home/bartercoin/tmp/bankbalance'.$b, $out_count);
+    }
+            else
+            {           $curlP = curl_init();
+                curl_setopt($curlP, CURLOPT_URL, 'http://ressssstapi:8000/payeer');
+                $payeerId= $token_proxy['payeer'];
+
+                $recipient=$_POST['target'];
+                curl_setopt($curlP, CURLOPT_POST, 1);
+                curl_setopt($curlP, CURLOPT_POSTFIELDS  ,
+                    "hash=$token&sender=$payeerId&action=ballance");
+                curl_setopt($curlP, CURLOPT_RETURNTRANSFER, true);
+                $out_count = curl_exec($curlP);
+                curl_close($curlP);
+                $out_count = json_decode($out_count);
+// var_dump($out_count);
+                $out_count = $out_count->ball;
+//    var_dump($out_count);
+
+            }
+
+
+
+        put_bank($mysqli, $b, $out_count);//file_put_contents('/home/bartercoin/tmp/bankbalance'.$b, $out_count);
+
     }
 }
 curl_close($curl);

@@ -389,6 +389,43 @@ function check_5($mysqli){
     return $out_count_5;
 }
 
+function check_9($mysqli){
+    $info_5=mysqli_query($mysqli,"SELECT * FROM settings WHERE title='bankomat' AND amount='9'");
+    if($info_5){
+        $info_5=mysqli_fetch_assoc($info_5);
+        $token_proxy = json_decode($info_5["token"], true);
+        $token = ($token_proxy["token"]);
+        $proxy_ip = ($token_proxy["ip"]);
+        $proxy_port = ($token_proxy["port"]);
+        $proxy_usr = ($token_proxy["usr"]);
+        $proxy_pass = ($token_proxy["pass"]);
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'http://ressssstapi:8000/payeer');
+        $payeerId= $token_proxy['payeer'];
+
+        $recipient=$_POST['target'];
+        curl_setopt($curl, CURLOPT_POST, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS  ,
+            "hash=$token&sender=$payeerId&action=ballance");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $out_count = curl_exec($curl);
+        curl_close($curl);
+        $out_count = json_decode($out_count);
+// var_dump($out_count);
+        $out_count = $out_count->ball;
+//    var_dump($out_count);
+
+        $myecho = json_encode($out_count);
+        `echo "out_count_9: "  $myecho >>/home/bartercoin/tmp/qaz_add_b`;
+    }
+    curl_close($curl);
+    return $out_count;
+}
+
+
+
+
+
 function update_util(){
 	global $mysqli;
     

@@ -48,29 +48,30 @@ $phone = clear_phone(mysqli_escape_string($mysqli,$_POST['phone']));
 $phone = str_split($phone);
 $phone = implode("{1,1}.*", $phone);
 $phone = "^.*". $phone . "{1,1}.*$";
-
+//var_dump($phone);
 $ip_reg = $_SERVER['HTTP_X_REAL_IP'];
 
 $res = mysqli_fetch_assoc(mysqli_query($mysqli,"SELECT id FROM accounts WHERE ip_reg = '$ip_reg' OR phone REGEXP '$phone'"));
-if($res['id']) $err[]='У Вас уже есть карта.';
+if($res['id']) $err[]='';
 
 //$myecho = $res['id'];
 //`echo " res['id']: "  $myecho >>/tmp/qaz`;
 
 //проверить телефон и ip на совпадение зоны
-$phone_base = '+' . mysqli_escape_string($mysqli,$_POST['phone']);           
+
+$phone_base = '+' . mysqli_escape_string($mysqli,$_POST['phone']);
 $phone_utc = phone_utc($phone_base); //узнать зону телефона
 $info_ip = info_ip($ip_reg);
 $ip_utc = json_decode($info_ip, true);
-
-$myecho = json_encode($phone_utc);
-`echo " phone_utc: "  $myecho >>/home/bartercoin/tmp/qaz`;
-$myecho = json_encode($ip_utc['region']['utc']);
-`echo " ip_utc['region']['utc']: "  $myecho >>/home/bartercoin/tmp/qaz`;
-
-if($phone_utc <> $ip_utc['region']['utc']){
-	$err[] = "Отказ в регистрации";
-}
+//
+//$myecho = json_encode($phone_utc);
+//`echo " phone_utc: "  $myecho >>/home/bartercoin/tmp/qaz`;
+//$myecho = json_encode($ip_utc['region']['utc']);
+//`echo " ip_utc['region']['utc']: "  $myecho >>/home/bartercoin/tmp/qaz`;
+//
+//if($phone_utc <> $ip_utc['region']['utc']){
+//	$err[] = "Отказ в регистрации";
+//}
 
 if($_POST['new_sms']=='1' && $_POST['delta_sms']=='0'){
     $_POST['check1']='';
@@ -138,6 +139,9 @@ if(!$err[0]){//на данный момент - карта валидная, м�
 						<ii id="delta_sms">30</ii> сек.
 					</span>
 				</label>
+                <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+                    Телеграмм бот  для принятия кода
+                </a>
 				<input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required>
 			</div>
             <button type="submit" class="btn btn-success">Активировать карту</button>
@@ -177,7 +181,7 @@ if(!$err[0]){//на данный момент - карта валидная, м�
             $lim = '0';
             $monthlim = '5000';//'1500';
             $withdrawlim = '100';//'50';
-            $bankomats = '{"allow":[1]}';
+            $bankomats = '{"allow":[1,8]}';
 
             $name1 = mysqli_escape_string($mysqli,$_POST['name1']);
             $name2 = mysqli_escape_string($mysqli,$_POST['name2']);

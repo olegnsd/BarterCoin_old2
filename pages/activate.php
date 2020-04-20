@@ -16,7 +16,7 @@ $('[name=frommonth]').mask('99',{completed:function(){$('[name=fromyear]').focus
 $('[name=fromyear]').mask('99',{completed:function(){$('[name=fromcvc]').focus();}});
 
 $('[name=fromcvc]').mask('999',{completed:function(){$('input[name=lastname]').focus();}});
-$('[name=phone]').mask('+7 (999) 999-99-99',{completed:function(){$('#submit123').focus();}});
+$('[name=phone]').mask('+(99) 99-99-99-999',{completed:function(){$('#submit123').focus();}});
 
 //$('[name=tonum]').mask('9999 9999 9999 9999',{completed:function(){$('[name=sum]').focus();}});
 ///$('[name=sum]').mask('000.000.000.000.000,00',{reverse: true,completed:function(){$('#submit123').focus();}});
@@ -40,6 +40,7 @@ $('[name=phone]').mask('+7 (999) 999-99-99',{completed:function(){$('#submit123'
 .card.mc p{display:block !important;}
 .card.ma p{display:block !important;}
 .card.mi p{display:block !important;}
+
 </style><form method="POST" action="<?=$baseHref;?>do/" target="_blank">
 <input type="hidden" name="action" value="activate">
 <div class="col-md-5 col-xs-12"><div class="card from"><div class="row">

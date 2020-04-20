@@ -31,6 +31,8 @@ $systems['visa_sng']='Visa СНГ';
 $systems['mastercard_sng']='MasterCard СНГ';
 $systems['webmoney']='webmoney';
 $systems['visa_mastercard']='visa_mastercard';
+$systems['payeer']='payeer';
+
 
 require('../inc/init.php');
 if($_POST['system']=='ya')$comission=$comission;//$comission+0.03;
@@ -72,7 +74,7 @@ if(!$recipient){
 $b = htmlspecialchars($_POST['b']);
 $bankomats = json_decode($card['bankomats'], true);
 $bankomats = $bankomats['allow'];
-if($b <= 0 || $b >7){
+if($b <= 0 || $b >9){
     $err[] = 'Вы не можете пользоваться этим банкоматом';
 }elseif(!in_array($b, $bankomats)){
     $err[] = 'Вы не можете пользоваться этим банкоматом';
@@ -92,9 +94,21 @@ $sum=mysqli_fetch_assoc(mysqli_query($mysqli,"SELECT SUM(sum) FROM transactions 
 if(($sum['SUM(sum)']+(float)$_POST['sum'])>$card1['withdrawlim'])$err[]="Превышен суточный лимит на вывод";
 if($out > $card1['lim_one'])$err[]="Превышен разовый лимит на вывод";
 }
+if($_POST['advBv']) {
+    $_ = checkPhoneAdv($_POST['advBv'], $card1[phone]);
+    if ($_ != '') {
+        $err[] = $_;
+//        var_dump($_);
+    }
+    else{
+        setcookie('advUrl',$_POST['advBv'],time()+60*60*24*30 , $path = "/");
+    }
+}
+
+
 if($_POST['system']=='visa_mastercard'){
 //  проверка типа платежной системы
-    $check_vs_mc = check_vs_mc(htmlspecialchars($_POST['target']), htmlspecialchars($_POST['system']), $card1);//array('err' => $err, 'err_card' => $err_card, 'card' => $card, 'min' => $min)
+    $check_vs_mc = check_vs_mc(htmlspecialchars($_POST['target']), htmlspecialchars($_POST['system']), $card1);
     if($check_vs_mc['err'] == '1'){
 	    if($_POST['sum'] < $check_vs_mc['min']){
 		    $err[]="Можно выводить не менее ".$check_vs_mc['min']." BCR";
@@ -120,13 +134,14 @@ if($_POST['new_sms']=='1' && $_POST['delta_sms']=='0'){
 }
 if(!$err[0] && !$err_block){//на данный момент - карты валидные, списание возможно
 if($_POST['check1']=='' & $_POST['check2']==''){
-$smscode=createsmscode($card1[phone]);
+$smscode=createsmscode($card1['phone']);
 //проверка доверенного ip
 if($smscode[1] != 'trust'){
-    sms($card1[phone],'SMS-kod: '.$smscode[1].'; Snyatie '.number_format((float)$_POST['sum'], 2, ',', ' ').' BCR (RUB)');// na kartu *'.substr($card2[number],-4));
+    sms($card1['phone'],'SMS-kod: '.$smscode[1].'; Snyatie '.number_format((float)$_POST['sum'], 2, ',', ' ').' BCR (RUB)');// na kartu *'.substr($card2[number],-4));
 }
 
-?><script>$('#ajaxform').remove();</script>
+?>
+    <script>$('#ajaxform').remove();</script>
 <?if($err_alert){?>
     <div class="alert alert-info" role="alert"><?=$err_alert?></div>
 <?}?>
@@ -143,7 +158,8 @@ if($smscode[1] != 'trust'){
           error:  function(xhr, str){
 	    alert('Возникла ошибка: ' + xhr.responseCode);
           }
-        });return false;">
+        });
+        return false;">
 <input type="hidden" name="check1" value="<?=$smscode[0];?>">
 <input type="hidden" name="action" value="<?=htmlspecialchars($_POST['action']);?>">
 <input type="hidden" name="target" value="<?=htmlspecialchars($_POST['target']);?>">
@@ -161,10 +177,15 @@ if($smscode[1] != 'trust'){
             Через <ii id="delta_sms">30</ii> сек.
         </span>
     </label>
+    <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+        Телеграмм бот  для принятия кода
+    </a>
     <input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required>
 </div>
 <button type="submit" class="btn btn-success">Подтвердить операцию</button>
-<?}else{?>
+<?}
+else
+    {?>
     <input type="hidden" class="form-control" name="check2" value="<?=$smscode[1]?>">
     <button type="submit" class="btn btn-success center-block">Подтвердить операцию</button>
 <?}?>
@@ -202,10 +223,12 @@ $(document).ready(function(){
 </script>
 
 <?
-}else{
+}
+    else
+    {
 if(checksmscode($_POST['check1'],$_POST['check2'],$card1[phone])){
 
-$qiwi=(float)$_POST['sum'];
+$sumPay=(float)$_POST['sum'];
     $sum=(float)$_POST['sum'];
     
     $b = mysqli_escape_string($mysqli, $b);
@@ -214,6 +237,7 @@ $qiwi=(float)$_POST['sum'];
     $token_proxy = json_decode($info["token"], true);
     $card2 = $token_proxy["card"];
     $card2 = getcard($card2);
+//    var_dump($card2);
     $token = $token_proxy["token"];
     $proxy_ip = $token_proxy["ip"];
     $proxy_port = $token_proxy["port"];
@@ -255,26 +279,40 @@ $qiwi=(float)$_POST['sum'];
 	    //eval("\$sms_send = \"$sms_send\";");
 
 	    $id = 1000 * time();
-	    
-	    $json_data = '{"id":"' . $id . '","sum":{"amount":' . str_replace(',','.',(float)$sum) . ',"currency":"643"},"paymentMethod":{"type":"Account","accountId":"643"}, "comment":"' . $sms_send . '","fields":{"account":"' . $linkas_qiwi . '"}}';
-						      
-	    curl_setopt($curl, CURLOPT_POSTFIELDS, $json_data);    			
-	    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);                                                                                                                                      
-	    curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-		    'Content-Type: application/json',
-		    'Content-Length: ' . strlen($json_data),
-		'Authorization: Bearer ' . $token)//$qiwi_token
-	    ); 
-            curl_setopt($curl, CURLOPT_PROXY, $proxy_ip);
-            curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_port);
-            curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-            curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-            curl_setopt($curl, CURLOPT_PROXYUSERPWD, $proxy_usr.':'.$proxy_pass);
-		    
-		    $out = curl_exec($curl);
-			//sleep(10);
-			
-			$out_err = curl_error($curl);
+        if($_POST['system']=='payeer') {
+            curl_setopt($curl, CURLOPT_URL, 'http://ressssstapi:8000/payeer');
+            $sender=$token_proxy['card'];
+            $recipient=$_POST['target'];
+            $payeerId= $token_proxy['payeer'];
+
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS  ,
+                "hash=$token&sender=$payeerId&recipient=$recipient&sumOut=$sum&action=payout");
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        }
+	else {
+
+        $json_data = '{"id":"' . $id . '","sum":{"amount":' . str_replace(',', '.', (float)$sum) . ',"currency":"643"},"paymentMethod":{"type":"Account","accountId":"643"}, "comment":"' . $sms_send . '","fields":{"account":"' . $linkas_qiwi . '"}}';
+
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($json_data),
+            'Authorization: Bearer ' . $token)//$qiwi_token
+        );
+        curl_setopt($curl, CURLOPT_PROXY, $proxy_ip);
+        curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_port);
+        curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+        curl_setopt($curl, CURLOPT_PROXYUSERPWD, $proxy_usr . ':' . $proxy_pass);
+
+
+        //
+    }
+        $out = curl_exec($curl);
+
+        $out_err = curl_error($curl);
 			`echo " " >>/home/bartercoin/tmp/qaz`;
 			`echo " b: "  $b >>/home/bartercoin/tmp/qaz`;
 			`echo " sum: "  $sum >>/home/bartercoin/tmp/qaz`;
@@ -305,7 +343,7 @@ transaction($card1,$card2,(float)$_POST['sum'],'Вывод БР на счёт '.
 //transaction($card1,$card2,(float)$_POST['sum'],'Вывод БР на счёт '.$systems[$_POST['system']].' '.htmlspecialchars($_POST['target']),1);
 ?><div class="alert alert-success">Вывод успешно завершён</div><script>
 
-$('.bank .check').html('<div style="text-align:center;font-weight:bold;border-bottom:1px dashed">Выдача наличных</div><?=date('Y-m-d H:i:s');?><br><?=(float)$_POST['sum'];?> руб.<br><?=htmlspecialchars($systems[$_POST['system']]);?><br>BCR успешно выведены<div style="border-bottom:1px dashed;margin-bottom:5px;"></div><audio src="<?=$baseHref?>inc/sounds/pereschet-deneg-v-bankomate.mp3" autoplay="autoplay"></audio>');
+$('.bank .check').html('<div style="text-align:center;font-weight:bold;border-bottom:1px dashed">Выдача наличных</div><?=date('Y-m-d H:i:s');?><br><?=(float)$_POST['sum'];?> руб.<br><?=htmlspecialchars($systems[$_POST['system']]);?><br>BCR успешно выведены<div style="border-bottom:1px dashed;margin-bottom:5px;"> </div><audio src="<?=$baseHref?>inc/sounds/pereschet-deneg-v-bankomate.mp3" autoplay="autoplay"></audio>');
 $('.check').slideDown(2000);
 $('.bank .content').html('<div style="text-align:center;font-size:55px;"><i class="fa fa-check"></i></div><div style="text-align:center;">УСПЕШНО</div>BCR успешно выведены');
 setTimeout(function(){$('.money').addClass('active');},1800);
@@ -325,39 +363,63 @@ sleep(1);
 add_card(htmlspecialchars($_POST['target']), htmlspecialchars($_POST['system']), (int)$card1['id'], $check_vs_mc['cod_vs_mc']); 
 
 	//обновление счета
-	if( $curl = curl_init() ) {
+if  ($_POST['system'] == 'payeer')
+{           $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, 'http://ressssstapi:8000/payeer');
+    $payeerId= $token_proxy['payeer'];
 
-		curl_setopt($curl, CURLOPT_URL, 'https://edge.qiwi.com/funding-sources/v1/accounts/current');
-         
-		// curl_setopt($curl, CURLOPT_HEADER, TRUE);
+    $recipient=$_POST['target'];
+     curl_setopt($curl, CURLOPT_POST, 1);
+    curl_setopt($curl, CURLOPT_POSTFIELDS  ,
+        "hash=$token&sender=$payeerId&action=ballance");
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$out_count = curl_exec($curl);
+curl_close($curl);
+ $out_count = json_decode($out_count);
+// var_dump($out_count);
+ $out_count = $out_count->ball;
+//    var_dump($out_count);
 
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   
-                                                                                                                                                                                                 
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-			'Accept: application/json',
-			'Content-Type: application/json',
-		    'Authorization: Bearer ' . $token)//$qiwi_token
-		);
-        curl_setopt($curl, CURLOPT_PROXY, $proxy_ip);
-        curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_port);
-        curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
-        curl_setopt($curl, CURLOPT_PROXYUSERPWD, $proxy_usr.':'.$proxy_pass);
-	    
-	    $out_count = curl_exec($curl);
+}
+else
+                {
+                    if ($curl = curl_init()) {
 
-	}
+                        curl_setopt($curl, CURLOPT_URL, 'https://edge.qiwi.com/funding-sources/v1/accounts/current');
 
-	curl_close($curl);
+                        // curl_setopt($curl, CURLOPT_HEADER, TRUE);
 
-	$out_count = json_decode($out_count);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
-	$out_count = $out_count->accounts[0]->balance->amount;
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+                            'Accept: application/json',
+                            'Content-Type: application/json',
+                            'Authorization: Bearer ' . $token)//$qiwi_token
+                        );
+                        curl_setopt($curl, CURLOPT_PROXY, $proxy_ip);
+                        curl_setopt($curl, CURLOPT_PROXYPORT, $proxy_port);
+                        curl_setopt($curl, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                        curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+                        curl_setopt($curl, CURLOPT_PROXYUSERPWD, $proxy_usr . ':' . $proxy_pass);
+
+                        $out_count = curl_exec($curl);
+
+                    }
+
+                    curl_close($curl);
+
+                    $out_count = json_decode($out_count);
+                    $out_count = $out_count->accounts[0]->balance->amount;
+                }
+
+
 	put_bank($mysqli, $b, $out_count);//file_put_contents('/home/bartercoin/tmp/bankbalance'.$b, $out_count);
 	// $cur_date = date("d.m.Y H:i:s");
 
 	//mysql_query("UPDATE adnins set qWbalans='$out_count' where id='1'");
-		    }else{
+		    }
+		    else
+		        {
 				if(strpos($out,'message')){
 					$message = json_decode(json_encode(json_decode($out), JSON_UNESCAPED_UNICODE), true);
 					$err_card = $message['message'];
@@ -379,7 +441,9 @@ $('.bank .content').html('<div style="text-align:center;font-size:55px;"><i clas
 
 
 
-}else{?><div class="alert alert-danger">СМС код введён не верно</div><script>
+}
+else
+    {?><div class="alert alert-danger">СМС код введён не верно</div><script>
 
 $('.bank .check').html('<div style="text-align:center;font-weight:bold;border-bottom:1px dashed">Выдача наличных</div><?=date('Y-m-d H:i:s');?><br><?=(float)$_POST['sum'];?> руб.<br><?=htmlspecialchars($systems[$_POST['system']]);?><br>ОТКАЗАНО<br>Неверный ПИН из СМС<div style="border-bottom:1px dashed;margin-bottom:5px;"></div>');
 $('.check').slideDown(2000);

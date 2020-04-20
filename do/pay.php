@@ -1,7 +1,11 @@
 <?
-if($_COOKIE['card1']){$card=getcard($_COOKIE['card1'],$_COOKIE['card2'],$_COOKIE['card3'],$_COOKIE['card4']);}
-if($_POST['fromnum']){$card=getcard($_POST['fromnum'],$_POST['frommonth'],$_POST['fromyear'],$_POST['fromcvc']);}
-$data=mysqli_fetch_array(mysqli_query($mysqli,"SELECT * FROM `shops` WHERE id='".(int)$_GET['shop']."' LIMIT 1;"));
+if ($_COOKIE['card1']) {
+    $card = getcard($_COOKIE['card1'], $_COOKIE['card2'], $_COOKIE['card3'], $_COOKIE['card4']);
+}
+if ($_POST['fromnum']) {
+    $card = getcard($_POST['fromnum'], $_POST['frommonth'], $_POST['fromyear'], $_POST['fromcvc']);
+}
+$data = mysqli_fetch_array(mysqli_query($mysqli, "SELECT * FROM `shops` WHERE id='" . (int)$_GET['shop'] . "' LIMIT 1;"));
 if($data['id']>0){
 $card2=getcardbyid($data['card']);
 if($card2['id']==0 || $card2['black'] == 1)$err[]='Карта привязанная к магазину не активна';
@@ -20,7 +24,8 @@ if(($_GET['sum']*($comission-1))<$mincomission)$out=round((float)$_GET['sum']+$m
 if(!$err[0]){
 $name = $card['name1'].' '.$card['name2'].' '.$card['name3'];
 $comment = htmlspecialchars($_GET['comment']).', контрагент '.$name.', карта '.$card['number'];
-?><p class="text-center">Магазин: <span style="font-weight: bold"><?=htmlspecialchars($data['name']);?></span></p>
+?>
+<p class="text-center">Магазин: <span style="font-weight: bold"><?=htmlspecialchars($data['name']);?></span></p>
 <p class="text-center">ID платежа: <span style="font-weight: bold"><?=htmlspecialchars($_GET['id']);?></span></p>
 <p class="text-center">Описание платежа: <span style="font-weight: bold"><?=$comment;?></span></p>
 <p class="text-center">Комиссия: <span class="target_commission" style="font-weight: bold"><?=$out-(float)$_GET['sum'];?> BCR (RUB)</span></p>
@@ -138,11 +143,15 @@ $comment = htmlspecialchars($_GET['comment']).', контрагент '.$name.',
                  <ii id="delta_sms">30</ii> сек.
             </span>
         </label>
+               <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+                             Телеграмм бот  для принятия кода
+                                </a>
         <input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required>
     </div>
 </div>
 <button type="submit" class="btn btn-success">Подтвердить операцию</button>
-<?}else{?>
+<?}
+else{?>
 	<input type="hidden" class="form-control" name="check2" value="<?=$smscode[1]?>">
 	<button type="submit" class="btn btn-success center-block">Подтвердить операцию</button>
 <?}?>
@@ -174,7 +183,8 @@ $comment = htmlspecialchars($_GET['comment']).', контрагент '.$name.',
     });
 </script>
 <?
-}else{
+}
+else{
 if(checksmscode($_POST['check1'],$_POST['check2'],$card1[phone])){
 $curl = curl_init();
 curl_setopt($curl, CURLOPT_URL, $data['url']);
@@ -243,6 +253,9 @@ sms($card1[phone],'SMS-kod: '.$smscode[1].'; Perevod '.number_format((float)$_PO
 </label>
 <input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required></div>
 <button type="submit" class="btn btn-success">Подтвердить операцию</button>
+       <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+                             Телеграмм бот  для принятия кода
+                                </a>
 </form><?
 }else{
 if(checksmscode($_POST['check1'],$_POST['check2'],$card1[phone])){

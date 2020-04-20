@@ -19,7 +19,7 @@ if(!$card){include('loginform.php');}else{
     if(isset($_POST['phone'])){
         $phone_base = mysqli_escape_string($mysqli,$_POST['phone']);
         $phone = clear_phone($phone_base);
-        if(strlen($phone) < 11){
+        if(strlen($phone) < 11 ){
             $err[] = "Неверный номер телефона";
         }
         $user_id = $card['id'];
@@ -52,7 +52,7 @@ if(!$card){include('loginform.php');}else{
                 }
             }
             if(!$sms_out){
-                 $err[] = "Извините СМС не отправлено, попробуйте позже";
+                 $err[] = "Извините СМС не отправлено, попробуйте позже!";
             }
             if(!isset($err)){//ошибок нет
                 mysqli_query($mysqli,"INSERT INTO `referals` (phone, from_id, date, activated) VALUES ('$phone_base', '$user_id', CURRENT_TIMESTAMP, 0)");
@@ -126,7 +126,7 @@ if(!$card){include('loginform.php');}else{
                             <label for="phone" class="col-md-4 control-label">Телефон</label>
 
                             <div class="col-md-6">
-                                <input name="phone" id="phone" type="text" class="form-control" placeholder="7(___) ___-____" value="" required autofocus>
+                                <input name="phone" id="phone" type="text" class="form-control" placeholder="(____) ___-____" value="" required autofocus>
                                     <span class="help-block">
                                         <strong></strong>
                                     </span>
@@ -196,7 +196,7 @@ if(!$card){include('loginform.php');}else{
     //1. После загрузки страницы,  когда все элементы будут доступны выполнить...
     $(function(){
       //2. Получить элемент, к которому необходимо добавить маску
-      $("#phone").mask("7(999) 999-9999");
+      // $("#phone").mask("7(999) 999-9999");
     });
     $('#nav_bar_3').addClass('active');    
     

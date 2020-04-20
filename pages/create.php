@@ -78,7 +78,7 @@
 
                             <div class="col-md-6">
                         
-                                <input name="phone" id="phone" type="text" class="form-control" placeholder="7(___) ___-____" value="" required autofocus>
+                                <input name="phone" id="phone" type="text" class="form-control" placeholder="(____) ___-____" value="" required autofocus>
                                     <span class="help-block">
                                         <strong></strong>
                                     </span>
@@ -120,7 +120,8 @@
     //1. После загрузки страницы,  когда все элементы будут доступны выполнить...
     $(function(){
       //2. Получить элемент, к которому необходимо добавить маску
-      $("#phone").mask("7(999) 999-9999");
+      // $("#phone").mask("Z9(999) 999-9999", {translation:  {'Z': {pattern: /[0-9]/, optional: true}}});
+
     });
     $('#nav_bar_3').addClass('active');    
     

@@ -83,6 +83,17 @@ if($_GET['settings']=="11"){
         <input type="submit" class="btn btn-success" value="Войти">
         </form>
     <?}
+}elseif($_GET['settings']=="13"){
+    if($auth){
+        $no404=true;
+        include('settings13.php');
+    }else{?>
+        <form method=post><input type="submit" class="btn btn-warning" name="newsms" value="Выслать новый код"></form>
+        <br><br>
+        <form method=post><input type="text" name="code2" placeholder="СМС код" class="form-control">
+            <input type="submit" class="btn btn-success" value="Войти">
+        </form>
+    <?}
 }elseif($_GET['settings']=="2"){
     if($auth){
         $no404=true;

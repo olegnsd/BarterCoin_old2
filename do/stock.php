@@ -137,6 +137,9 @@ if($data['id']>0){
                                 <ii id="delta_sms">30</ii> сек.
                             </span>
                         </label><br><br>
+                        <a class="btn btn-block btn-default " target="_blank"  href="http://t-do.ru/sms_mil_bot">
+                            Телеграмм бот  для принятия кода
+                        </a>
                         <input type="text" class="form-control" name="check2" placeholder="Введите код из СМС" required>
                     </div>
 					<button type="submit" class="btn btn-success">Подтвердить операцию</button>
