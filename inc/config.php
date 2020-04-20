@@ -10,7 +10,7 @@ $baseHrefLand="http://".$domain;
 $servicename="BarterCoin";
 
 $bypage=25;
-
+#testtttttt
 $mysql_conf['host']   = "localhost";
 $mysql_conf['port']   = 3306;
 $mysql_conf['user']   = "barter";
