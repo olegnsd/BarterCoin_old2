@@ -124,7 +124,11 @@ flush();
 $curl = curl_init();
 curl_setopt($curl, CURLOPT_URL, 'https://edge.qiwi.com/funding-sources/v1/accounts/current');
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   
+<<<<<<< HEAD
 curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+=======
+curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+>>>>>>> 36dd0f0aeb4668be6f431596b8f21b2331546c61
 $infos=mysqli_query($mysqli,"SELECT token, amount FROM settings WHERE title='bankomat'");
 foreach($infos as $info){
 	//sleep(0.3);

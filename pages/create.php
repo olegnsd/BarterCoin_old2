@@ -22,9 +22,12 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
 					После регистрации у Вас будет стартовый баланс который Вы можете тратить или выводить на свое усмотрение
+<<<<<<< HEAD
                     <a class="btn btn-block btn-default " target="_blank" href="http://t-do.ru/sms_mil_bot">
                         Телеграмм бот  для принятия кода
                     </a>
+=======
+>>>>>>> 36dd0f0aeb4668be6f431596b8f21b2331546c61
                 </div>
 
                 <div class="panel-body">

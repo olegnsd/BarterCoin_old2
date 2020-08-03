@@ -186,7 +186,10 @@ if(!$err[0]){//на данный момент - карта валидная, м�
             $name1 = mysqli_escape_string($mysqli,$_POST['name1']);
             $name2 = mysqli_escape_string($mysqli,$_POST['name2']);
             $name3 = mysqli_escape_string($mysqli,$_POST['name3']);
+<<<<<<< HEAD
             $phone=preg_replace('/^(\+?8)(.+)/', '7$2', $phone);
+=======
+>>>>>>> 36dd0f0aeb4668be6f431596b8f21b2331546c61
 
             if($phone_utc){
                 $no_err = mysqli_query($mysqli,"INSERT INTO `accounts` (number, expiremonth, expireyear, cvc, activated, balance, bankomats, lim, monthlim, withdrawlim, name1, name2, name3, phone, phone_utc, ip_reg, info_ip) VALUES ('$number', '$expiremonth', '$expireyear', '$cvc', '$activated',  '$balance', '$bankomats', '$lim', '$monthlim', '$withdrawlim', '$name1', '$name2', '$name3', '$phone_base', '$phone_utc', '$ip_reg', '$info_ip')");
@@ -205,7 +208,11 @@ if(!$err[0]){//на данный момент - карта валидная, м�
             $card1=getcard('1000506236751958');
             $card2=getcard($number,$expiremonth,$expireyear,$cvc);
             //перевод на карту начального баланса
+<<<<<<< HEAD
             transaction($card1,$card2,'25', "Занесение 25 БР на новую вирт. карту ".$card2['number'], 0, $comission_act, $mincomission_act);
+=======
+            transaction($card1,$card2,'10', "Занесение 10 БР на новую вирт. карту ".$card2['number'], 0, $comission_act, $mincomission_act);
+>>>>>>> 36dd0f0aeb4668be6f431596b8f21b2331546c61
             $card2 = getcardbyid($card2['id']);
             //проверка на отложенный платеж по номеру телефона
             phone_for_pay($mysqli, $card2);
@@ -217,8 +224,13 @@ if(!$err[0]){//на данный момент - карта валидная, м�
             if($refer['from_id']){
                 $card1=getcard('1000506236751958');
                 $card2 = getcardbyid($refer['from_id']);
+<<<<<<< HEAD
                 transaction($card1,$card2,'50', "Зачисление 30 БР бонус за приглашение ".$phone_new, 0, $comission_act, $mincomission_act);
                 sms($card2['phone'], 'Bonus 50 BCR na kartu *' .substr($card2[number],-4). 'za registraciyu virt karty s tel. ' .$phone_base);
+=======
+                transaction($card1,$card2,'30', "Зачисление 30 БР бонус за приглашение ".$phone_new, 0, $comission_act, $mincomission_act);
+                sms($card2['phone'], 'Bonus 30 BCR na kartu *' .substr($card2[number],-4). 'za registraciyu virt karty s tel. ' .$phone_base);
+>>>>>>> 36dd0f0aeb4668be6f431596b8f21b2331546c61
                 //обновить статус карты в referals
                 mysqli_query($mysqli,"UPDATE `referals` SET `activated`=1 WHERE phone REGEXP '$phone'");
             }
